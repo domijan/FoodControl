@@ -1,0 +1,617 @@
+---
+title: "Food Questinnaire: demographics 3way bar charts"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r, results='hide',echo=FALSE, warning = FALSE, message = FALSE}
+library(knitr)
+library(magrittr)
+library(tidyverse)
+library(lattice)
+library(scatterplot3d)
+library(rgl)
+library(reshape2)
+library(ggplot2)
+library(plot3D)
+library(RColorBrewer)
+
+
+```
+
+```{r, results='hide',echo=FALSE, warning = FALSE, message = FALSE}
+a <- read.csv("questionnaire.csv")
+names(a)
+hardcopy <- a[, 92]
+correct <- a[, c(21, 23, 64)]
+correct[is.na(correct)] <- 0
+
+wrong <- a[, c(81, 83, 85, 87, 89, 91)]
+
+a <- a[, -c(21, 23, 64, 81, 83, 85, 87, 89, 91, 92)]
+qunames <- names(a)
+
+
+
+```
+
+Calculate knowledge scores:
+
+```{r, results='hide',echo=FALSE, warning = FALSE, message = FALSE}
+
+
+temp <- sapply(a[, c(22:24, 26:46)], as.integer) - 1
+temp2 <- sapply(a[, 63:70], as.integer) - 1
+# delete 62 -beverage lists
+
+Q37 <- sapply(a[, 47:60], as.integer)
+Q37 <- apply(Q37, 1, sum, na.rm = TRUE)/14
+
+Q48 <- sapply(a[, 71:76], as.integer) - 1
+Q48 <- apply(Q48, 1, sum, na.rm = TRUE)/6
+
+Q49 <- sapply(a[, 77:82], as.integer) - 1
+Q49 <- apply(Q49, 1, sum, na.rm = TRUE)/6
+
+nq <- dim(temp)[2]+dim(temp2)[2] +3+3
+correct2 <- correct[, 1:2]
+score2 <- apply(correct2, 1, sum) + apply(temp,1,sum, na.rm = TRUE)   + apply(temp2,1,sum, na.rm = TRUE)
+score2 <- score2/(nq-4)
+
+```
+Rename factor levels:
+
+```{r, results='hide',echo=FALSE, warning = FALSE, message = FALSE}
+levels(hardcopy) <- c(levels(hardcopy),"Hardcopy", "SurveyMonkey") 
+hardcopy[hardcopy==1] <- "Hardcopy"
+hardcopy[hardcopy==0] <- "SurveyMonkey"
+
+levels(a[, 1]) <- c(levels(a[, 1]),"male", "female")
+a[a[, 1]==0 & !is.na(a[, 1]),1] <- "male"
+a[a[, 1]==1& !is.na(a[, 1]),1] <- "female"
+
+levels(a[, 2]) <- c(levels(a[, 2]),"Under 18", "19-24", "25-34", "35-44", "45-54", "55-64")
+a[a[, 2]==0& !is.na(a[, 2]),2] <- "Under 18"
+a[a[, 2]==1& !is.na(a[, 2]),2] <- "19-24"
+a[a[, 2]==2& !is.na(a[, 2]),2] <- "25-34"
+a[a[, 2]==3& !is.na(a[, 2]),2] <- "35-44"
+a[a[, 2]==4& !is.na(a[, 2]),2] <- "45-54"
+a[a[, 2]==5& !is.na(a[, 2]),2] <- "55-64"
+
+
+levels(a[, 3]) <- c(levels(a[, 3]),"Hotel", "Cafe/Deli", "Canteen", "Restaurant", "Bar", "Other***")
+a[a[, 3]==0& !is.na(a[, 3]),3] <- "Hotel"
+a[a[, 3]==1& !is.na(a[, 3]),3] <- "Cafe/Deli"
+a[a[, 3]==2& !is.na(a[, 3]),3] <- "Canteen"
+a[a[, 3]==3& !is.na(a[, 3]),3] <- "Restaurant"
+a[a[, 3]==4& !is.na(a[, 3]),3] <- "Bar"
+a[a[, 3]==5& !is.na(a[, 3]),3] <- "Other***"
+
+levels(a[, 4]) <- c(levels(a[, 4]),"Head Chef*", "Chef", "Back of House", "Front of House","Other**")
+a[a[, 4]==0& !is.na(a[, 4]),4] <- "Head Chef*"
+a[a[, 4]==1& !is.na(a[, 4]),4] <- "Chef"
+a[a[, 4]==2& !is.na(a[, 4]),4] <- "Back of House"
+a[a[, 4]==3& !is.na(a[, 4]),4] <- "Front of House"
+a[a[, 4]==4& !is.na(a[, 4]),4] <- "Other**"
+
+
+levels(a[, 5]) <- c(levels(a[, 5]),"JuniorCert/QQILevel3", "LeavingCert/Level4-5", "HigherCert/Level6", "University/Level7+")
+a[a[, 5]==0& !is.na(a[, 5]),5] <- "JuniorCert/QQILevel3"
+a[a[, 5]==1& !is.na(a[, 5]),5] <- "LeavingCert/Level4-5"
+a[a[, 5]==2& !is.na(a[, 5]),5] <- "HigherCert/Level6"
+a[a[, 5]==3& !is.na(a[, 5]),5] <- "University/Level7+"
+
+
+
+levels(a[, 6]) <- c(levels(a[, 6]),"<=2 years", "2-8 years", "8-16 years", "16-25 years", ">25 years")
+a[a[, 6]==0& !is.na(a[, 6]),6] <- "<=2 years"
+a[a[, 6]==1& !is.na(a[, 6]),6] <- "2-8 years"
+a[a[, 6]==2& !is.na(a[, 6]),6] <- "8-16 years"
+a[a[, 6]==3& !is.na(a[, 6]),6] <- "16-25 years"
+a[a[, 6]==4& !is.na(a[, 6]),6] <- ">25 years"
+
+levels(a[, 7]) <- c(levels(a[, 7]),"Never", "Level1", "Level2", "Level3")
+a[a[, 7]==0& !is.na(a[, 7]),7] <- "Never"
+a[a[, 7]==1& !is.na(a[, 7]),7] <- "Level1"
+a[a[, 7]==2& !is.na(a[, 7]),7] <- "Level2"
+a[a[, 7]==3& !is.na(a[, 7]),7] <- "Level3"  
+a <- droplevels(a)
+
+```
+More on demographics: three way barcharts. Data from questions 1 - 9. 
+
+Note: missing values were removed from all plots, tables and analyses.
+
+
+```{r, fig.width=9,fig.height=9,echo=FALSE}
+reddat <- a[, 1:7]
+reddat <- na.omit(reddat)
+
+for(i in 1:7)levels(reddat[, i]) <- levels(a[, i]) 
+
+
+
+names(reddat)[7] <- "Level Food Safety Training"
+
+p <- ggplot(data = reddat, aes(x = Age, fill=Role))+facet_wrap(~ Gender) + geom_bar(position="fill")
+print(p)
+# 
+# p <- ggplot(data = reddat, aes(x = Yearsworked, fill=Role))+facet_wrap(~ Gender) + geom_bar(position="fill") 
+# print(p)
+# 
+# p <- ggplot(data = reddat, aes(x = Education, fill=Role))+facet_wrap(~ Gender) + geom_bar(position="fill") 
+# print(p)
+# 
+# p <- ggplot(data = reddat, aes(x = Education, fill=Role))+facet_wrap(~ Gender) + geom_bar(position="fill") 
+# print(p)
+# 
+# p <- ggplot(data = reddat, aes(x = Establishment, fill=Role))+facet_wrap(~ Gender) + geom_bar(position="fill") + theme(axis.text.x=element_text(angle = 45, hjust = 1, vjust = 0.5))
+# print(p)
+# 
+# =====================
+
+p <- ggplot(data = reddat, aes(x = Role, fill=`Level Food Safety Training`))+facet_wrap(~ Establishment) + geom_bar(position="fill")+ scale_fill_discrete(name="Level Food \nSafety Training")+ theme(axis.text.x=element_text(angle = 45, hjust = 0.5, vjust = 0.5))
+print(p)
+
+
+
+
+
+# =======================
+
+
+
+
+p <- ggplot(data = reddat, aes(x = Age, fill=Education))+facet_wrap(~ `Level Food Safety Training`) + geom_bar(position="fill") 
+print(p)
+
+# p <- ggplot(data = reddat, aes(x = Age, fill=`Level Food Safety Training`))+facet_wrap(~ Establishment) + geom_bar() 
+# print(p)
+
+# p <- ggplot(data = reddat, aes(x = Age, fill=Role))+facet_wrap(~ Establishment) + geom_bar() 
+# print(p)
+
+p <- ggplot(data = reddat, aes(x = Age, fill=Role))+facet_wrap(~ Establishment) + geom_bar(position="fill") 
+print(p)
+```
+
+## Statistical analysis
+
+
+Pearson's Chi-squared Tests were performed to examine if there was a significant relationship between establishments, roles and the level of food safety training that the staff had received.
+
+
+## Establishment and level of food safety training
+
+```{r, fig.width=10,fig.height=10,echo=FALSE}
+
+tbl <- table(reddat[,3], reddat[,7])
+  
+print(chisq.test(tbl))
+
+print(chisq.test(tbl[,1]))
+
+print(kable(addmargins(addmargins(tbl, 1), 2),digits=rep(0, length(levels(reddat[,7]))+2)))
+               
+
+
+# addmargins(prop.table(tbl))
+tbl <- prop.table(tbl,1)
+print(kable(addmargins(tbl, 2), digits = c(2,2,2,2,1)))
+
+# To see where significant differences are:
+# library(rcompanion)
+#
+# pairwiseNominalIndependence(t(tbl),
+#                             fisher = FALSE,
+#                             gtest  = FALSE,
+#                             chisq  = TRUE,
+#                             method = "fdr")
+# chisq.test(t(tbl)[1:2,])
+# pairwiseNominalIndependence((tbl),
+#                             fisher = FALSE,
+#                             gtest  = FALSE,
+#                             chisq  = TRUE,
+#                             method = "fdr")
+# 
+# names(reddat)[7]<- "LFST"
+# tbl <- xtabs(~Establishment + LFST, data = reddat)
+# library(vcdExtra)
+# t2 <- collapse.table(tbl, LFST=c("Never", "Yes", "Yes", "Yes"))
+# pairwiseNominalIndependence((t2),
+#                             fisher = FALSE,
+#                             gtest  = FALSE,
+#                             chisq  = TRUE,
+#                             method = "fdr")
+      
+
+p <- ggplot(data = reddat, aes(x = Establishment, fill=`Level Food Safety Training`)) + geom_bar(position="fill")+
+  scale_y_continuous("Proportion")+ theme(axis.text.x=element_text(angle = 45, hjust = 0.5, vjust = 0.5))
+print(p)                  
+```
+
+
+Chi-squared analysis suggested that there is a significant (p-value $< 0.01$) relationship between the type of Establishment that the staff work at and the type of training that they have received. 
+
+NOTE: Canteens have the highest proportion of staff that have received Level 3 of food safety training (60\%) and no respondent reported working at a canteen and having never received food safety training. 
+
+## Role and level of food safety training
+
+```{r, fig.width=10,fig.height=10,echo=FALSE}
+
+tbl <- table(reddat[,4], reddat[,7])
+  
+print(chisq.test(tbl))
+
+print(kable(addmargins(addmargins(tbl, 1), 2),digits=rep(0, length(levels(reddat[,7]))+2)))
+               
+
+
+# addmargins(prop.table(tbl))
+tbl <- prop.table(tbl,1)
+print(kable(addmargins(tbl, 2), digits = c(2,2,2,2,1)))
+
+
+
+```
+
+
+
+
+In order to for the Chi-squared test to be valid the Roles had to be grouped into fewer categories (`Chef \& Back of House', `Head Chef', `Front of House \& Other**'). We found that there was a statistically significant (p-value $< 0.01$) relationship between the role  of the staff and the type of training that they have received. 
+
+
+
+```{r, fig.width=10,fig.height=10,echo=FALSE}
+levels(reddat[, 4]) <- c(levels(reddat[, 4]),"Head Chef*", "Chef & Back of House", "Front of House & Other**")
+
+reddat[reddat[, 4]=="Back of House",4] <- "Chef & Back of House"
+reddat[reddat[, 4]=="Chef",4] <- "Chef & Back of House"
+reddat[reddat[, 4]=="Other**",4] <- "Front of House & Other**"
+reddat[reddat[, 4]=="Front of House",4] <- "Front of House & Other**"
+reddat <- droplevels(reddat)
+
+tbl <- table(reddat[,4], reddat[,7])
+  
+print(chisq.test(tbl))
+
+pairwiseNominalIndependence((tbl),
+                            fisher = FALSE,
+                            gtest  = FALSE,
+                            chisq  = TRUE,
+                            method = "fdr")
+
+  print(kable(addmargins(addmargins(tbl, 1), 2),digits=rep(0, length(levels(reddat[,4]))+2)))
+               
+
+
+# addmargins(prop.table(tbl))
+tbl <- prop.table(tbl,1)
+print(kable(addmargins(tbl, 2), digits = c(2,2,2,2,1)))
+
+p <- ggplot(data = reddat, aes(x = Role, fill=`Level Food Safety Training`)) + geom_bar(position="fill")+
+  scale_y_continuous("Proportion")+ theme(axis.text.x=element_text(angle = 45, hjust = 0.5, vjust = 0.5))
+print(p)
+
+
+```
+
+
+
+##Establishment and Role
+
+```{r, fig.width=10,fig.height=10,echo=FALSE}
+
+reddat <- a[, 1:7]
+reddat <- na.omit(reddat)
+for(i in 1:7)levels(reddat[, i]) <- levels(a[, i]) 
+tbl <- table(reddat[,3], reddat[,4])
+  
+print(chisq.test(tbl))
+
+pairwiseNominalIndependence((tbl),
+                            fisher = FALSE,
+                            gtest  = FALSE,
+                            chisq  = TRUE,
+                            method = "fdr")
+print(kable(addmargins(addmargins(tbl, 1), 2),digits=rep(0, length(levels(reddat[,4]))+2)))
+               
+
+
+# addmargins(prop.table(tbl))
+tbl <- prop.table(tbl,1)
+print(kable(addmargins(tbl, 2), digits = c(2,2,2,2,2,1)))
+
+
+
+```
+
+
+
+In order to for the Chi-squared test to be valid the Roles had to be grouped into fewer categories (`Chef \& Back of House', `Head Chef', `Front of House \& Other**'). We found that there was a statistically significant (p-value $< 0.01$) relationship between the role and the type establishment that the respondents work at.
+E.g the proportion of Head Chef's (managers and Supervisors) is highest in the canteens (36\%) and lowest in bars ( 4\%). Conversely, canteens have the lowest percentage of staff reported as Front of House \& Other** (15\%) and bars have highest (93\%). 
+
+
+```{r, fig.width=10,fig.height=10,echo=FALSE}
+levels(reddat[, 4]) <- c(levels(reddat[, 4]),"Head Chef*", "Chef & Back of House", "Front of House & Other**")
+# reddat[reddat[, 4]==0,4] <- "Head Chef*"
+reddat[reddat[, 4]=="Back of House",4] <- "Chef & Back of House"
+reddat[reddat[, 4]=="Chef",4] <- "Chef & Back of House"
+reddat[reddat[, 4]=="Other**",4] <- "Front of House & Other**"
+reddat[reddat[, 4]=="Front of House",4] <- "Front of House & Other**"
+reddat <- droplevels(reddat)
+
+tbl <- table(reddat[,3], reddat[,4])
+  
+print(chisq.test(tbl))
+
+  print(kable(addmargins(addmargins(tbl, 1), 2),digits=rep(0, length(levels(reddat[,4]))+2)))
+               
+
+
+# addmargins(prop.table(tbl))
+tbl <- prop.table(tbl,1)
+print(kable(addmargins(tbl, 2), digits = c(2,2,2,1)))
+
+p <- ggplot(data = reddat, aes(x = Establishment, fill=Role)) + geom_bar(position="fill")+
+  scale_y_continuous("Proportion")+ theme(axis.text.x=element_text(angle = 45, hjust = 0.5, vjust = 0.5))
+print(p)
+
+
+```
+
+
+## Establishment, Role and Food Safety Training
+
+```{r, fig.width=10,fig.height=10,echo=FALSE}
+reddat <- a[, 1:7]
+reddat <- na.omit(reddat)
+for(i in 1:7)levels(reddat[, i]) <- levels(a[, i]) 
+
+p <- ggplot(data = reddat, aes(x = Role, fill=LevelFSTraining))+facet_wrap(~ Establishment) + geom_bar(position="fill")+
+  scale_y_continuous("Proportion") + scale_fill_discrete(name="Level Food \nSafety Training")+ theme(axis.text.x=element_text(angle = 45, hjust = 0.5, vjust = 0.5))
+print(p)
+
+
+
+
+library(MASS)
+tbl <- xtabs(~ LevelFSTraining +Role + Establishment , data = reddat)
+mantelhaen.test(tbl)
+
+tbl <- xtabs(~ LevelFSTraining  + Establishment +Role, data = reddat)
+
+mantelhaen.test(tbl)
+
+
+
+```
+
+
+
+NOTE The Chi-squared tests in the sections above look at pairwise relationships between varioables (e.g. is level of training associated with role) and do not look at relationships between role and training at different establishment, which is also relevant. 
+
+In order to check for this I performed another test (Cochran-Mantel-Haenszel chi-squared test). This confirms that there is evidence for association between role and food safety training at different establishments.
+
+We performed a Cochran-Mantel-Haenszel chi-squared test of the null hypothesis that role and level of training are conditionally independent in each type of establishment. 
+
+There is evidence for association between role and food safety training when adjusted for establishment (p-value $< 0.01$). 
+
+
+
+
+## Knowledge Scores
+
+Scores (proportion of correct answers). This was calculated by NOT including the pathogen questions (Q48 and Q49) and the three Allergen questions (Q 37, Q38 and Q39).
+
+
+
+```{r, fig.width=5,fig.height=4,echo=FALSE, results="asis"}
+
+score <- as.data.frame(t(t(score2*100)))
+p <- ggplot(data = score, aes(x = V1) ) + geom_histogram(bins = 20) +
+  labs(x="score") 
+
+
+print(p)
+
+
+```
+
+
+
+
+```{r}
+round(mean(score2),2)
+```
+
+
+
+Difference in hardcopy (1) and survey monkey (0) average scores:
+
+
+```{r}
+mean(score2[hardcopy=="Hardcopy"])
+mean(score2[hardcopy=="SurveyMonkey"])
+
+
+
+```
+
+
+## Score by demographics
+
+Score by demographics (establishment, role, gender, levels of education etc):
+
+
+```{r, fig.width=5,fig.height=4,echo=FALSE, results="asis"}
+
+
+levels(a[, 1]) <- c(levels(a[, 1]),"male", "female")
+a[a[, 1]==0 & !is.na(a[, 1]),1] <- "male"
+a[a[, 1]==1& !is.na(a[, 1]),1] <- "female"
+
+levels(a[, 2]) <- c(levels(a[, 2]),"Under 18", "19-24", "25-34", "35-44", "45-54", "55-64")
+a[a[, 2]==0& !is.na(a[, 2]),2] <- "Under 18"
+a[a[, 2]==1& !is.na(a[, 2]),2] <- "19-24"
+a[a[, 2]==2& !is.na(a[, 2]),2] <- "25-34"
+a[a[, 2]==3& !is.na(a[, 2]),2] <- "35-44"
+a[a[, 2]==4& !is.na(a[, 2]),2] <- "45-54"
+a[a[, 2]==5& !is.na(a[, 2]),2] <- "55-64"
+
+
+levels(a[, 3]) <- c(levels(a[, 3]),"Hotel", "Cafe/Deli", "Canteen", "Restaurant", "Bar", "Other***")
+a[a[, 3]==0& !is.na(a[, 3]),3] <- "Hotel"
+a[a[, 3]==1& !is.na(a[, 3]),3] <- "Cafe/Deli"
+a[a[, 3]==2& !is.na(a[, 3]),3] <- "Canteen"
+a[a[, 3]==3& !is.na(a[, 3]),3] <- "Restaurant"
+a[a[, 3]==4& !is.na(a[, 3]),3] <- "Bar"
+a[a[, 3]==5& !is.na(a[, 3]),3] <- "Other***"
+
+levels(a[, 4]) <- c(levels(a[, 4]),"Head Chef*", "Chef", "Back of House", "Front of House","Other**")
+a[a[, 4]==0& !is.na(a[, 4]),4] <- "Head Chef*"
+a[a[, 4]==1& !is.na(a[, 4]),4] <- "Chef"
+a[a[, 4]==2& !is.na(a[, 4]),4] <- "Back of House"
+a[a[, 4]==3& !is.na(a[, 4]),4] <- "Front of House"
+a[a[, 4]==4& !is.na(a[, 4]),4] <- "Other**"
+
+
+levels(a[, 5]) <- c(levels(a[, 5]),"JuniorCert/QQILevel3", "LeavingCert/Level4-5", "HigherCert/Level6", "University/Level7+")
+a[a[, 5]==0& !is.na(a[, 5]),5] <- "JuniorCert/QQILevel3"
+a[a[, 5]==1& !is.na(a[, 5]),5] <- "LeavingCert/Level4-5"
+a[a[, 5]==2& !is.na(a[, 5]),5] <- "HigherCert/Level6"
+a[a[, 5]==3& !is.na(a[, 5]),5] <- "University/Level7+"
+
+
+
+levels(a[, 6]) <- c(levels(a[, 6]),"<=2 years", "2-8 years", "8-16 years", "16-25 years", ">25 years")
+a[a[, 6]==0& !is.na(a[, 6]),6] <- "<=2 years"
+a[a[, 6]==1& !is.na(a[, 6]),6] <- "2-8 years"
+a[a[, 6]==2& !is.na(a[, 6]),6] <- "8-16 years"
+a[a[, 6]==3& !is.na(a[, 6]),6] <- "16-25 years"
+a[a[, 6]==4& !is.na(a[, 6]),6] <- ">25 years"
+
+levels(a[, 7]) <- c(levels(a[, 7]),"Never", "Level 1", "Level 2", "Level 3")
+a[a[, 7]==0& !is.na(a[, 7]),7] <- "Never"
+a[a[, 7]==1& !is.na(a[, 7]),7] <- "Level 1"
+a[a[, 7]==2& !is.na(a[, 7]),7] <- "Level 2"
+a[a[, 7]==3& !is.na(a[, 7]),7] <- "Level 3"  
+a <- droplevels(a)
+
+# names(a)[7] <- "Level Food Safety Training"
+
+# kable(head(a[, 1:7]))
+
+```
+
+
+```{r, fig.width=5,fig.height=4,echo=FALSE, results="asis"}
+
+score <- as.data.frame(t(t(score2)))
+
+for(i in 1:7){
+
+score_by <- score %>% group_by(a[, i])
+btab <- score_by %>% na.omit() %>%summarise(
+  mean(V1),  sd(V1)/sqrt(length(V1)) )
+# sd(V1), length(V1),
+ # "sd", "n",
+colnames(btab)<- c(qunames[i] ,"average score", "se")
+
+
+
+colnames(btab)<- c("grps" ,"average score", "se")
+p <- ggplot(data = btab, aes(x = grps) ) + geom_bar(aes(y = `average score`,fill=grps),stat="identity") +
+ guides(fill=FALSE)+
+  theme(text = element_text(size=9))+
+  labs(x=qunames[i])
+
+print(p)
+}
+```
+
+
+
+
+```{r, fig.width=5,fig.height=4,echo=FALSE, results="asis"}
+
+
+for(i in 1:7){
+
+score_by <- score %>% group_by(a[, i])
+btab <- score_by %>% na.omit() %>%summarise(
+  mean(V1),  sd(V1)/sqrt(length(V1)) )
+# sd(V1), length(V1),
+ # "sd", "n",
+colnames(btab)<- c(qunames[i] ,"average score", "se")
+print(kable(btab))
+
+
+
+}
+
+mean(score2[a[,4]!="Head Chef*"], na.rm = TRUE)
+```
+
+## Data analysis
+
+
+Multiple Factor (Independent Variable) ANOVA was used to assess the effect of Gender, Age, Establishment, Role, Education, Years worked and Level of food safety training on the score. 
+
+
+There was a significant main effect for Establishment, Role,  Years worked and Level of food safety training on the score (all p-values $<0.01$). 
+
+The two way and higher interactions between the factors were not found to be significant (p-value $>0.05$). 
+
+Similarly, gender, education and age were not found to be significant (p-value $>0.05$) once the significant main effect were taken acount in the model. NOTE: Julie,FYI, this means that say age on its own may be a significant factor, but it is not significant once years worked is added to the model.   
+
+NOTE: Julie this is FYI, but not necessarily to go into your thesis. 
+As scores had a skewed distribution, the models were fitted to a transformed response variable (scores$^2$). Model diagnostic plots showed that the assumptions of the model were satisfied. Another altrernative is to use nonparametric tests such as Kruskal-Wallis, however, this test cannot be applied to a factorial structure (i.e. looking at the effect of more than one variable at at time). I performed this analysis as well I got results that were consistent with above.
+
+
+
+```{r}
+reddat <- as.data.frame(cbind(score^2, a[1:7]))
+names(reddat)[1] <- "Score"
+
+fm <- aov(Score ~ Role+Establishment+LevelFSTraining   +Yearsworked , data = reddat)
+print(summary(fm))
+kable(coef(fm))
+
+# 
+# kruskal.test(Score ~ Gender, data = reddat)
+# kruskal.test(Score ~ Role, data = reddat)
+# kruskal.test(Score ~ Establishment , data = reddat)
+# kruskal.test(Score ~ LevelFSTraining , data = reddat)
+# kruskal.test(Score ~Yearsworked , data = reddat)
+```
+
+Post hoc tests (Tukey HSD) were performed to find the significant pairwise difference in means of the factor levels.
+
+```{r, fig.width=7,fig.height=7,echo=FALSE, results="asis"}
+par(las=1, mar=c(5.1,12.1,4.1,5.1))
+kable(TukeyHSD(fm, "Role", ordered = TRUE)$Role)
+plot(TukeyHSD(fm, "Role"))
+
+kable(TukeyHSD(fm, "Establishment", ordered = TRUE)$Establishment)
+plot(TukeyHSD(fm, "Establishment"))
+
+kable(TukeyHSD(fm, "LevelFSTraining", ordered = TRUE)$LevelFSTraining)
+plot(TukeyHSD(fm, "LevelFSTraining"))
+
+kable(TukeyHSD(fm, "Yearsworked", ordered = TRUE)$Yearsworked)
+plot(TukeyHSD(fm, "Yearsworked"))
+
+
+```
+
