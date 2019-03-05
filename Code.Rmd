@@ -1,5 +1,5 @@
 ---
-title: "Food Questinnaire: demographics 3way bar charts"
+title: "Food Questinnaire analysis"
 output:
   word_document: default
   html_document: default
@@ -45,22 +45,22 @@ qunames <- names(a)
 
 ```
 
-Calculate knowledge scores:
+
 
 ```{r, results='hide',echo=FALSE, warning = FALSE, message = FALSE}
 
-
-temp <- sapply(a[, c(22:24, 26:46)], as.integer) - 1
-temp2 <- sapply(a[, 63:70], as.integer) - 1
+# Calculate knowledge scores:
+temp <- sapply(a[, c(22:24, 26:46)], as.integer)
+temp2 <- sapply(a[, 63:70], as.integer) 
 # delete 62 -beverage lists
 
 Q37 <- sapply(a[, 47:60], as.integer)
 Q37 <- apply(Q37, 1, sum, na.rm = TRUE)/14
 
-Q48 <- sapply(a[, 71:76], as.integer) - 1
+Q48 <- sapply(a[, 71:76], as.integer)
 Q48 <- apply(Q48, 1, sum, na.rm = TRUE)/6
 
-Q49 <- sapply(a[, 77:82], as.integer) - 1
+Q49 <- sapply(a[, 77:82], as.integer) 
 Q49 <- apply(Q49, 1, sum, na.rm = TRUE)/6
 
 nq <- dim(temp)[2]+dim(temp2)[2] +3+3
@@ -69,18 +69,20 @@ score2 <- apply(correct2, 1, sum) + apply(temp,1,sum, na.rm = TRUE)   + apply(te
 score2 <- score2/(nq-4)
 
 ```
-Rename factor levels:
+
 
 ```{r, results='hide',echo=FALSE, warning = FALSE, message = FALSE}
+
+# Rename factor levels:
 levels(hardcopy) <- c(levels(hardcopy),"Hardcopy", "SurveyMonkey") 
 hardcopy[hardcopy==1] <- "Hardcopy"
 hardcopy[hardcopy==0] <- "SurveyMonkey"
 
-levels(a[, 1]) <- c(levels(a[, 1]),"male", "female")
+levels(a[, 1]) <- c("male", "female")
 a[a[, 1]==0 & !is.na(a[, 1]),1] <- "male"
 a[a[, 1]==1& !is.na(a[, 1]),1] <- "female"
 
-levels(a[, 2]) <- c(levels(a[, 2]),"Under 18", "19-24", "25-34", "35-44", "45-54", "55-64")
+levels(a[, 2]) <- c("Under 18", "19-24", "25-34", "35-44", "45-54", "55-64")
 a[a[, 2]==0& !is.na(a[, 2]),2] <- "Under 18"
 a[a[, 2]==1& !is.na(a[, 2]),2] <- "19-24"
 a[a[, 2]==2& !is.na(a[, 2]),2] <- "25-34"
@@ -89,7 +91,7 @@ a[a[, 2]==4& !is.na(a[, 2]),2] <- "45-54"
 a[a[, 2]==5& !is.na(a[, 2]),2] <- "55-64"
 
 
-levels(a[, 3]) <- c(levels(a[, 3]),"Hotel", "Cafe/Deli", "Canteen", "Restaurant", "Bar", "Other***")
+levels(a[, 3]) <- c("Hotel", "Cafe/Deli", "Canteen", "Restaurant", "Bar", "Other***")
 a[a[, 3]==0& !is.na(a[, 3]),3] <- "Hotel"
 a[a[, 3]==1& !is.na(a[, 3]),3] <- "Cafe/Deli"
 a[a[, 3]==2& !is.na(a[, 3]),3] <- "Canteen"
@@ -97,7 +99,7 @@ a[a[, 3]==3& !is.na(a[, 3]),3] <- "Restaurant"
 a[a[, 3]==4& !is.na(a[, 3]),3] <- "Bar"
 a[a[, 3]==5& !is.na(a[, 3]),3] <- "Other***"
 
-levels(a[, 4]) <- c(levels(a[, 4]),"Head Chef*", "Chef", "Back of House", "Front of House","Other**")
+levels(a[, 4]) <- c("Head Chef*", "Chef", "Back of House", "Front of House","Other**")
 a[a[, 4]==0& !is.na(a[, 4]),4] <- "Head Chef*"
 a[a[, 4]==1& !is.na(a[, 4]),4] <- "Chef"
 a[a[, 4]==2& !is.na(a[, 4]),4] <- "Back of House"
@@ -105,7 +107,7 @@ a[a[, 4]==3& !is.na(a[, 4]),4] <- "Front of House"
 a[a[, 4]==4& !is.na(a[, 4]),4] <- "Other**"
 
 
-levels(a[, 5]) <- c(levels(a[, 5]),"JuniorCert/QQILevel3", "LeavingCert/Level4-5", "HigherCert/Level6", "University/Level7+")
+levels(a[, 5]) <- c("JuniorCert/QQILevel3", "LeavingCert/Level4-5", "HigherCert/Level6", "University/Level7+")
 a[a[, 5]==0& !is.na(a[, 5]),5] <- "JuniorCert/QQILevel3"
 a[a[, 5]==1& !is.na(a[, 5]),5] <- "LeavingCert/Level4-5"
 a[a[, 5]==2& !is.na(a[, 5]),5] <- "HigherCert/Level6"
@@ -113,14 +115,14 @@ a[a[, 5]==3& !is.na(a[, 5]),5] <- "University/Level7+"
 
 
 
-levels(a[, 6]) <- c(levels(a[, 6]),"<=2 years", "2-8 years", "8-16 years", "16-25 years", ">25 years")
+levels(a[, 6]) <- c("<=2 years", "2-8 years", "8-16 years", "16-25 years", ">25 years")
 a[a[, 6]==0& !is.na(a[, 6]),6] <- "<=2 years"
 a[a[, 6]==1& !is.na(a[, 6]),6] <- "2-8 years"
 a[a[, 6]==2& !is.na(a[, 6]),6] <- "8-16 years"
 a[a[, 6]==3& !is.na(a[, 6]),6] <- "16-25 years"
 a[a[, 6]==4& !is.na(a[, 6]),6] <- ">25 years"
 
-levels(a[, 7]) <- c(levels(a[, 7]),"Never", "Level1", "Level2", "Level3")
+levels(a[, 7]) <- c("Never", "Level1", "Level2", "Level3")
 a[a[, 7]==0& !is.na(a[, 7]),7] <- "Never"
 a[a[, 7]==1& !is.na(a[, 7]),7] <- "Level1"
 a[a[, 7]==2& !is.na(a[, 7]),7] <- "Level2"
@@ -128,7 +130,7 @@ a[a[, 7]==3& !is.na(a[, 7]),7] <- "Level3"
 a <- droplevels(a)
 
 ```
-More on demographics: three way barcharts. Data from questions 1 - 9. 
+
 
 Note: missing values were removed from all plots, tables and analyses.
 
@@ -210,7 +212,7 @@ tbl <- prop.table(tbl,1)
 print(kable(addmargins(tbl, 2), digits = c(2,2,2,2,1)))
 
 # To see where significant differences are:
-# library(rcompanion)
+library(rcompanion)
 #
 # pairwiseNominalIndependence(t(tbl),
 #                             fisher = FALSE,
@@ -273,7 +275,7 @@ In order to for the Chi-squared test to be valid the Roles had to be grouped int
 
 
 ```{r, fig.width=10,fig.height=10,echo=FALSE}
-levels(reddat[, 4]) <- c(levels(reddat[, 4]),"Head Chef*", "Chef & Back of House", "Front of House & Other**")
+levels(reddat[, 4]) <- c("Head Chef*", "Chef & Back of House", "Front of House & Other**")
 
 reddat[reddat[, 4]=="Back of House",4] <- "Chef & Back of House"
 reddat[reddat[, 4]=="Chef",4] <- "Chef & Back of House"
@@ -319,13 +321,13 @@ tbl <- table(reddat[,3], reddat[,4])
   
 print(chisq.test(tbl))
 
-pairwiseNominalIndependence((tbl),
-                            fisher = FALSE,
-                            gtest  = FALSE,
-                            chisq  = TRUE,
-                            method = "fdr")
-print(kable(addmargins(addmargins(tbl, 1), 2),digits=rep(0, length(levels(reddat[,4]))+2)))
-               
+# pairwiseNominalIndependence((tbl),
+#                             fisher = FALSE,
+#                             gtest  = FALSE,
+#                             chisq  = TRUE,
+#                             method = "fdr")
+# print(kable(addmargins(addmargins(tbl, 1), 2),digits=rep(0, length(levels(reddat[,4]))+2)))
+#                
 
 
 # addmargins(prop.table(tbl))
@@ -343,8 +345,8 @@ E.g the proportion of Head Chef's (managers and Supervisors) is highest in the c
 
 
 ```{r, fig.width=10,fig.height=10,echo=FALSE}
-levels(reddat[, 4]) <- c(levels(reddat[, 4]),"Head Chef*", "Chef & Back of House", "Front of House & Other**")
-# reddat[reddat[, 4]==0,4] <- "Head Chef*"
+levels(reddat[, 4]) <- c("Head Chef*", "Chef & Back of House", "Front of House & Other**")
+
 reddat[reddat[, 4]=="Back of House",4] <- "Chef & Back of House"
 reddat[reddat[, 4]=="Chef",4] <- "Chef & Back of House"
 reddat[reddat[, 4]=="Other**",4] <- "Front of House & Other**"
@@ -454,68 +456,7 @@ mean(score2[hardcopy=="SurveyMonkey"])
 Score by demographics (establishment, role, gender, levels of education etc):
 
 
-```{r, fig.width=5,fig.height=4,echo=FALSE, results="asis"}
-
-
-levels(a[, 1]) <- c(levels(a[, 1]),"male", "female")
-a[a[, 1]==0 & !is.na(a[, 1]),1] <- "male"
-a[a[, 1]==1& !is.na(a[, 1]),1] <- "female"
-
-levels(a[, 2]) <- c(levels(a[, 2]),"Under 18", "19-24", "25-34", "35-44", "45-54", "55-64")
-a[a[, 2]==0& !is.na(a[, 2]),2] <- "Under 18"
-a[a[, 2]==1& !is.na(a[, 2]),2] <- "19-24"
-a[a[, 2]==2& !is.na(a[, 2]),2] <- "25-34"
-a[a[, 2]==3& !is.na(a[, 2]),2] <- "35-44"
-a[a[, 2]==4& !is.na(a[, 2]),2] <- "45-54"
-a[a[, 2]==5& !is.na(a[, 2]),2] <- "55-64"
-
-
-levels(a[, 3]) <- c(levels(a[, 3]),"Hotel", "Cafe/Deli", "Canteen", "Restaurant", "Bar", "Other***")
-a[a[, 3]==0& !is.na(a[, 3]),3] <- "Hotel"
-a[a[, 3]==1& !is.na(a[, 3]),3] <- "Cafe/Deli"
-a[a[, 3]==2& !is.na(a[, 3]),3] <- "Canteen"
-a[a[, 3]==3& !is.na(a[, 3]),3] <- "Restaurant"
-a[a[, 3]==4& !is.na(a[, 3]),3] <- "Bar"
-a[a[, 3]==5& !is.na(a[, 3]),3] <- "Other***"
-
-levels(a[, 4]) <- c(levels(a[, 4]),"Head Chef*", "Chef", "Back of House", "Front of House","Other**")
-a[a[, 4]==0& !is.na(a[, 4]),4] <- "Head Chef*"
-a[a[, 4]==1& !is.na(a[, 4]),4] <- "Chef"
-a[a[, 4]==2& !is.na(a[, 4]),4] <- "Back of House"
-a[a[, 4]==3& !is.na(a[, 4]),4] <- "Front of House"
-a[a[, 4]==4& !is.na(a[, 4]),4] <- "Other**"
-
-
-levels(a[, 5]) <- c(levels(a[, 5]),"JuniorCert/QQILevel3", "LeavingCert/Level4-5", "HigherCert/Level6", "University/Level7+")
-a[a[, 5]==0& !is.na(a[, 5]),5] <- "JuniorCert/QQILevel3"
-a[a[, 5]==1& !is.na(a[, 5]),5] <- "LeavingCert/Level4-5"
-a[a[, 5]==2& !is.na(a[, 5]),5] <- "HigherCert/Level6"
-a[a[, 5]==3& !is.na(a[, 5]),5] <- "University/Level7+"
-
-
-
-levels(a[, 6]) <- c(levels(a[, 6]),"<=2 years", "2-8 years", "8-16 years", "16-25 years", ">25 years")
-a[a[, 6]==0& !is.na(a[, 6]),6] <- "<=2 years"
-a[a[, 6]==1& !is.na(a[, 6]),6] <- "2-8 years"
-a[a[, 6]==2& !is.na(a[, 6]),6] <- "8-16 years"
-a[a[, 6]==3& !is.na(a[, 6]),6] <- "16-25 years"
-a[a[, 6]==4& !is.na(a[, 6]),6] <- ">25 years"
-
-levels(a[, 7]) <- c(levels(a[, 7]),"Never", "Level 1", "Level 2", "Level 3")
-a[a[, 7]==0& !is.na(a[, 7]),7] <- "Never"
-a[a[, 7]==1& !is.na(a[, 7]),7] <- "Level 1"
-a[a[, 7]==2& !is.na(a[, 7]),7] <- "Level 2"
-a[a[, 7]==3& !is.na(a[, 7]),7] <- "Level 3"  
-a <- droplevels(a)
-
-# names(a)[7] <- "Level Food Safety Training"
-
-# kable(head(a[, 1:7]))
-
-```
-
-
-```{r, fig.width=5,fig.height=4,echo=FALSE, results="asis"}
+```{r, fig.width=3,fig.height=2.5,echo=FALSE, results="asis"}
 
 score <- as.data.frame(t(t(score2)))
 
@@ -575,8 +516,8 @@ The two way and higher interactions between the factors were not found to be sig
 
 Similarly, gender, education and age were not found to be significant (p-value $>0.05$) once the significant main effect were taken acount in the model. NOTE: Julie,FYI, this means that say age on its own may be a significant factor, but it is not significant once years worked is added to the model.   
 
-NOTE: Julie this is FYI, but not necessarily to go into your thesis. 
-As scores had a skewed distribution, the models were fitted to a transformed response variable (scores$^2$). Model diagnostic plots showed that the assumptions of the model were satisfied. Another altrernative is to use nonparametric tests such as Kruskal-Wallis, however, this test cannot be applied to a factorial structure (i.e. looking at the effect of more than one variable at at time). I performed this analysis as well I got results that were consistent with above.
+
+As scores had a skewed distribution, the models were fitted to a transformed response variable (scores$^2$). Model diagnostic plots showed that the assumptions of the model were satisfied. Another altrernative is to use nonparametric tests such as Kruskal-Wallis, however, this test cannot be applied to a factorial structure (i.e. looking at the effect of more than one variable at at time). The results of that analysis were consistent with above.
 
 
 
